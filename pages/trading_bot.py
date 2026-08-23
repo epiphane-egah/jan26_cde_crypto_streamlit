@@ -11,7 +11,7 @@ from utils.clients import Client
 st.set_page_config(page_title="Crypto Bot Dashboard", page_icon="🪙", layout="centered")
 
 # Titre principal et description
-st.title("🪙 Configuration de votre Bot")
+st.title("🪙 Configuration du Bot")
 st.markdown("Remplissez le formulaire ci-dessous pour lancer votre stratégie de trading.")
 
 # Utilisation d'un conteneur visuel pour regrouper le formulaire

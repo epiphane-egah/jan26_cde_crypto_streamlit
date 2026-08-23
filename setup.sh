@@ -1,0 +1,1 @@
+docker image build -t trading_bot_image:latest . && docker container run -p 8080:8080 --name trading_bot trading_bot_image:latest

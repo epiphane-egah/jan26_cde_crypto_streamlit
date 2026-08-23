@@ -1,4 +1,5 @@
 """
+
 Dashboard Streamlit — suivi hebdomadaire de la performance de la stratégie.
 
 Lancer avec :
@@ -7,7 +8,7 @@ Lancer avec :
 N'accède jamais directement au fichier JSON ou à une base : passe toujours
 par weekly_metrics.load_weekly_report(). C'est ce qui permet de migrer
 vers SQL plus tard sans toucher à ce fichier.
-"""
+
 
 import streamlit as st
 
@@ -75,4 +76,4 @@ if not trades_df.empty:
         use_container_width=True,
     )
 else:
-    st.info("Aucun trade fermé à afficher.")
+    st.info("Aucun trade fermé à afficher.")"""
