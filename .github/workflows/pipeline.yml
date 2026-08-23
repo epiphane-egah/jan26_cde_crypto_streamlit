@@ -1,0 +1,33 @@
+name: trading bot CI
+on:
+    push:
+    pull_request:
+      branches: [main]
+jobs:
+    linting-job:
+        runs-on: ${{matrix.os}}
+        strategy:
+            matrix:
+                os: [ubuntu-latest]
+        steps:
+        - name: Checkout du code
+        uses: actions/checkout@v4
+        - name: Configurer Python
+        uses: actions/setup-python@v5
+        with:
+            python-version: '3.13'
+        - name: Installer Flake8
+        run: |
+            python -m pip install --upgrade pip
+            pip install flake8
+        - name: Analyser le code avec Flake8
+        run: |
+            # Arrête le build s'il y a des erreurs de syntaxe Python ou des symboles non définis
+            flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+            # Sortie en avertissement pour le reste des règles de style (n'échoue pas le build)
+            flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+
+
+
+        
