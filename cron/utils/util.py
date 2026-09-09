@@ -140,8 +140,7 @@ def update_balance(client, order):
     return client
 
 
-def save_order(order, path="info_transactions/transactions.jsonl"):
-    
+def save_order(order, path):
     """
     JSON Lines : un objet JSON complet par ligne. Chaque ligne correspond
     exactement à une future ligne de table SQL FAIT_SIGNAL_TRADING — c'est
@@ -149,4 +148,4 @@ def save_order(order, path="info_transactions/transactions.jsonl"):
     la structure des données elles-mêmes (voir weekly_metrics.py).
     """
     with open(path, "a") as f:
-        f.write(json.dumps(order) + "\n")
+        json.dump(order, f, indent=4)

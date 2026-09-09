@@ -218,3 +218,5 @@ __marimo__/
 .streamlit/secrets.toml
 poetry.lock
 pyproject.toml
+
+jan26-cde-crypto-3e6ed86f7bdf.json

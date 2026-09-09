@@ -1,0 +1,55 @@
+services:
+  postgres:
+    container_name: trading-bot-postgres
+    image: postgres:16.10
+    ports:
+      - "5432:5432"
+    networks:
+      - trading-bot-network
+    volumes:
+      - volume-postgres:/var/lib/postgresql/data
+      - ./postgres/postgres_ddl.sql:/docker-entrypoint-initdb.d/postgres_ddl.sql:ro
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${password}
+      POSTGRES_USER: ${user}
+      POSTGRES_DB: ${dbname}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U epiphane -d madb"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+  frontend:
+    container_name: bot-trading-frontend
+    image: epiphane/trading-bot-frontend:latest
+    ports:
+      - "8501:8501"
+    restart: no
+    networks:
+      - trading-bot-network
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+  cronjob:
+    container_name: trading-bot-cron
+    image: epiphane/trading-bot-cron:latest
+    volumes:
+      - cron-volume-tr:/app/info_transactions/
+      - cron-volume-logs:/app/logs/
+    networks:
+      - trading-bot-network
+    env_file:
+      - .env
+    depends_on:
+      - frontend
+    
+
+
+networks:
+  trading-bot-network:
+volumes:
+  volume-postgres:
+  cron-volume-tr:
+  cron-volume-logs:

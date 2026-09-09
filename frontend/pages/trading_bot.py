@@ -1,10 +1,9 @@
 import os
-import sys
-import json
-from pathlib import Path
+import time
+import psycopg2
 import streamlit as st
-from utils.clients import Client
-
+import dotenv
+dotenv.load_dotenv()
 
 
 # Configuration de la page pour un rendu propre
@@ -21,9 +20,9 @@ with st.form("crypto_trading_form", clear_on_submit=False):
     # Alignement du nom et du prénom sur la même ligne
     col1, col2 = st.columns(2)
     with col1:
-        prenom = st.text_input("Prénom", placeholder="Epiphane")
+        prenom = st.text_input("Prénom", placeholder="Epiphane").capitalize()
     with col2:
-        nom = st.text_input("Nom", placeholder="Egah")
+        nom = st.text_input("Nom", placeholder="Egah").capitalize()
         
     st.markdown("---") # Ligne de séparation visuelle
     st.subheader("💰 Paramètres d'Investissement")
@@ -61,18 +60,33 @@ if bouton_lancement:
     if not nom.strip() or not prenom.strip():
         st.error("⚠️ Veuillez renseigner votre nom et votre prénom avant de lancer le bot.")
     else:
-        save_path = f"info_clients/client_{nom.lower().strip()}_{prenom.lower().strip()}_{crypto}.json"
-        if os.path.exists(save_path):
+        while True:
+            try:
+                user = os.getenv("user")
+                password = os.getenv("password")
+                port = os.getenv("DB_PORT")
+                dbname = os.getenv("dbname")
+                host = os.getenv("host")
+                conn = psycopg2.connect(f"postgresql://{user}:{password}@{host}:{port}/{dbname}")
+                print("Connexion PostgreSQL réussie !")
+                break
+            except Exception as e:
+                print(f"Connexion échouée : {e}")
+                time.sleep(2)
+        try:
+            table = os.getenv("table_name")
+            c = conn.cursor()
+            c.execute(f"""INSERT INTO {table} (ClientOrderId, lastname, firstname, interval, type_crypto, usdt, solde_crypto)
+                  VALUES ('bot_{prenom}_{nom}', '{nom}', '{prenom}', '{intervalle}', '{crypto}', {montant}, {0} )""")
+            conn.commit()
+        except psycopg2.errors.UniqueViolation:
             st.info("### 📋 Le client existe déjà, voici ses informations à ce jour :")
-            # #je vais charger son fichier json et afficher ses infomations à l'utilisateur
-            with open(save_path, "r") as f:
-                data = json.load(f)
-            nom = data["lastname"]
-            prenom = data["firstname"]
-            crypto = data["type_crypto"]
-            intervalle = data['interval']
-            solde_crypto = data["solde_crypto"]
-            usdt = data["usdt"]
+            # requête SQL pour récupérer les données
+            conn.rollback()
+            c.execute("SELECT * FROM Clients")
+            result = c.fetchone()
+            prenom, nom, crypto, intervalle, solde_crypto, usdt = result[1], result[2], result[3], result[4], result[5], result[6]
+
             # Titre
             st.markdown("### 👤 Informations de votre compte")
 
@@ -87,25 +101,31 @@ if bouton_lancement:
 
             with col2:
                 st.markdown(f"""
+                **👤 Nom**  
+                ### {nom}
+                """)
+
+            with col3:
+                st.markdown(f"""
                 **🪙 Crypto**  
                 ### {crypto}
                 """)
 
-            with col3:
+            col4, col5, col6 = st.columns(3)
+           
+            with col4:
                 st.markdown(f"""
                 **⏱️ Intervalle**  
                 ### {intervalle}
                 """)
 
-            # Deuxième ligne
-            col4, col5 = st.columns(2)
-            with col4:
+            with col5:
                 st.markdown(f"""
                 **💰 Solde crypto**  
                 ### {solde_crypto}
                 """)
 
-            with col5:
+            with col6:
                 st.markdown(f"""
                 **💵 Solde USDT**  
                 ### {usdt} USDT
@@ -113,7 +133,7 @@ if bouton_lancement:
 
         else:
             # Message de succès global
-            st.success(f"✨ Paramètres validés avec succès ! Initialisation du bot...")
+            st.success("✨ Paramètres validés avec succès ! Initialisation du bot...")
             # Affichage visuel des données récoltées (prêtes à être envoyées à votre app)
             st.info("### 📋 Récapitulatif de la configuration")
         
@@ -125,14 +145,5 @@ if bouton_lancement:
             with col_res2:
                 st.markdown(f"**Actif sélectionné :** {crypto}")
                 st.markdown(f"**Fréquence :** Chaque {intervalle.lower()}")
-
-            solde_crypto = 0
-            Client.save(path=save_path, usdt=montant,
-                        solde_crypto=solde_crypto,
-                        lastname=nom, firstname=prenom,
-                        interval=intervalle, crypto=crypto)
-            
-
-            
-            
-        
+        finally:
+            conn.close()

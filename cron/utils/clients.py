@@ -1,8 +1,5 @@
 import json
-from pathlib import Path
-import sys
-sys.path.append(str(Path('.').resolve() / "utils"))
-from simulate_order import simulate_order
+from .simulate_order import simulate_order
 
 
 class Client:
@@ -60,8 +57,3 @@ class Client:
                 f,
                 indent=2,
             )
-
-
-if __name__ == "__main__":
-    client = Client()
-    print(client.get_balance())

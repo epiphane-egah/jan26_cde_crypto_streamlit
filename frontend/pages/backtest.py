@@ -34,6 +34,8 @@ def html(block: str) -> None:
 # STYLE — thème "terminal de trading" : fond quasi-noir, accents bleu/orange
 # repris directement des courbes xgboost (bleu) et arch (orange) du rapport.
 # --------------------------------------------------------------------------
+
+
 html(
     """
     <style>

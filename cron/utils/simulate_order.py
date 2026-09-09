@@ -1,4 +1,5 @@
 import datetime
+from zoneinfo import ZoneInfo
 import uuid
 from decimal import Decimal, ROUND_DOWN
  
@@ -73,44 +74,17 @@ def simulate_order(df, symbol, side, client_order_id,
         "status": "FILLED",
         "type": "MARKET",
         "side": side,
-        # Champs aplatis (en plus de "fills" détaillé) : évite d'avoir à
-        # parcourir un tableau imbriqué pour la métrique la plus utilisée
-        # (total des frais). Une future table SQL peut ignorer "fills" et
-        # ne garder que ces deux colonnes si le détail par fill ne sert pas.
         "commission_total": float(commission),
         "commission_asset": commission_asset,
-        # Rempli plus tard par trade() sur les ordres SELL uniquement,
-        # pour relier une fermeture de position à son ouverture (voir
-        # discussion Option A / Option B).
         "id_ordre_ouverture": None,
         "fills": [
             {
-                "price": float(prix_execution),      # <- identique à "price"
+                "price": float(prix_execution),
                 "qty": float(quantite_dec),
                 "commission": float(commission),
                 "commissionAsset": commission_asset,
             }
         ],
+        "heure_transaction": datetime.datetime.now(
+            ZoneInfo("Europe/Paris")).strftime("%Y-%m-%d, %Hh-%Mmin")
     }
- 
-
-if __name__ == "__main__":
-    import pandas as pd
- 
-    df_exemple = pd.DataFrame({
-        "open_time": [1751500800000, 1751504400000],
-        "close": [62280.75, 62340.10],
-    })
- 
-    signal = "BUY"  # viendrait normalement de la logique RSI/MA de ta stratégie
- 
-    ordre = simulate_order(
-        df=df_exemple,
-        symbol="BTCUSDT",
-        side=signal,
-        client_order_id="bot_strategie2_001",
-        quantite=0.05,
-    )
- 
-    import json
-    print(json.dumps(ordre, indent=2))
