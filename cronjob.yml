@@ -13,13 +13,14 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY cron/ /app/
-RUN chmod 755 /app/*.py && \
+RUN chmod 0644 /app/*.py && \
     mkdir -p logs && \
     touch logs/cron.log logs/non_transactions.log
 
 
 COPY cron/cronjob /etc/cron.d/cronjob
-RUN chmod 755 /etc/cron.d/cronjob && \
-    crontab /etc/cron.d/cronjob
+
+RUN chmod 0644 /etc/cron.d/cronjob && \
+    chown root:root /etc/cron.d/cronjob
 
 CMD ["cron", "-f", "-l", "2"]

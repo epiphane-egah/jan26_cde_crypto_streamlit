@@ -16,12 +16,12 @@ fi
 
 docker login
 
-docker build -f frontend.yml -t trading-bot-frontend:latest .
-docker tag trading-bot-frontend:latest epiphane/trading-bot-frontend:latest
-docker push epiphane/trading-bot-frontend:latest
+docker buildx build --platform linux/amd54 -f frontend.yml -t trading-bot-frontend:latest .
+docker tag trading-bot-frontend:latest eepiphane/trading-bot-frontend:latest
+docker push eepiphane/trading-bot-frontend:latest
 
-docker build -f cronjob.yml -t trading-bot-cron:latest .
-docker tag trading-bot-cron:latest epiphane/trading-bot-cron:latest
-docker push epiphane/trading-bot-cron:latest
+docker buildx build --platform linux/amd64 -f cronjob.yml -t trading-bot-cron:latest .
+docker tag trading-bot-cron:latest eepiphane/trading-bot-cron:latest
+docker push eepiphane/trading-bot-cron:latest
 
 docker compose up -d
