@@ -30,7 +30,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 \
             --max-line-length=127 --statistics
 
-
+  
   deploy-job:
     runs-on: ubuntu-latest
     needs: linting-job
@@ -47,7 +47,7 @@ jobs:
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4
-        
+
       - name: Installer gcloud
         uses: google-github-actions/setup-gcloud@v3
 
@@ -57,11 +57,21 @@ jobs:
           project_id: jan26-cde-crypto
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
+     
       - name: Vérifier authentification
         run: |
           gcloud auth list
           gcloud config set project jan26-cde-crypto
-
+          - name: Debug GCP identities
+          run: |
+            echo "=== DEPLOYER ==="
+            gcloud auth list --filter=status:ACTIVE --format="value(account)"
+        
+            echo "=== CURRENT CLOUD RUN SERVICE ACCOUNT ==="
+            gcloud run services describe jan26-cde-crypto-service \
+              --region=europe-west1 \
+              --project=jan26-cde-crypto \
+              --format="value(spec.template.spec.serviceAccountName)" || true
+      
       - name: Deploy
         run: ./gcr_setup.sh
