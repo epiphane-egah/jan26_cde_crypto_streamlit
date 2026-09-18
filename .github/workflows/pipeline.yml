@@ -47,6 +47,9 @@ jobs:
     steps:
       - name: Checkout du code
         uses: actions/checkout@v4
+        
+      - name: Installer gcloud
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Authentification Google Cloud
         uses: google-github-actions/auth@v3
@@ -54,9 +57,6 @@ jobs:
           project_id: jan26-cde-crypto
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
-      - name: Installer gcloud
-        uses: google-github-actions/setup-gcloud@v3
 
       - name: Vérifier authentification
         run: |
