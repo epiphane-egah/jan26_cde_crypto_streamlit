@@ -46,6 +46,11 @@ gcloud iam service-accounts add-iam-policy-binding \
   --project="$PROJECT_ID" \
   --role="roles/iam.workloadIdentityUser" \
   --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${POOL_NAME}/attribute.repository/${GITHUB_REPO}"
+# utiliser un service account sans crédentials
+gcloud iam service-accounts add-iam-policy-binding \
+  "975242104567-compute@developer.gserviceaccount.com" \
+  --member="serviceAccount:${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountUser"
 # autoriser le service account à utiliser le service cloud run
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --member="serviceAccount:${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
