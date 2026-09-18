@@ -48,25 +48,20 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Installer gcloud
-        uses: google-github-actions/setup-gcloud@v3
-
       - name: Authentification Google Cloud
         uses: google-github-actions/auth@v3
         with:
           project_id: jan26-cde-crypto
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-     
-      - name: Vérifier authentification
-        run: |
-          gcloud auth list
-          gcloud config set project jan26-cde-crypto
+      
+      - name: Installer gcloud
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Debug GCP identities
         run: |
             echo "=== DEPLOYER ==="
-            gcloud auth list --format="value(account)"
+            gcloud auth list--format="value(account)"
             echo "=== CURRENT CLOUD RUN SERVICE ACCOUNT ==="
             gcloud run services describe jan26-cde-crypto-service \
             --region=europe-west1 \
