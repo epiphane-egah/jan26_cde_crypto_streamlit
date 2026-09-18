@@ -2,7 +2,6 @@
 
 PROJECT_ID="jan26-cde-crypto"
 GITHUB_REPO="epiphane-egah/jan26_cde_crypto_streamlit"
-SA_NAME="github-cloud-run"
 POOL_NAME="github"
 PROVIDER_NAME="github-provider" # Nom du provider OIDC
 
@@ -21,10 +20,6 @@ gcloud services enable \
   secretmanager.googleapis.com \
   --project=jan26-cde-crypto
 
-# création d'un service account sur gcloud
-gcloud iam service-accounts create "$SA_NAME" \
-  --project="$PROJECT_ID" \
-  --display-name="GitHub Actions Cloud Run"
 # création d'un espace workload identity sur gcloud (système externe)
 gcloud iam workload-identity-pools create "$POOL_NAME" \
   --project="$PROJECT_ID" \
@@ -42,23 +37,11 @@ gcloud iam workload-identity-pools providers create-oidc "$PROVIDER_NAME" \
   --attribute-condition="assertion.repository=='$GITHUB_REPO'"
 # autoriser github à utiliser le service account crée.
 gcloud iam service-accounts add-iam-policy-binding \
-  "${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
+  "$PROJECT_NUMBER-compute@developer.gserviceaccount.com" \
   --project="$PROJECT_ID" \
   --role="roles/iam.workloadIdentityUser" \
   --member="principalSet://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${POOL_NAME}/attribute.repository/${GITHUB_REPO}"
-# utiliser un service account sans crédentials
-gcloud iam service-accounts add-iam-policy-binding \
-  "975242104567-compute@developer.gserviceaccount.com" \
-  --member="serviceAccount:${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
-  --role="roles/iam.serviceAccountUser"
-# autoriser le service account à utiliser le service cloud run
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
-  --role="roles/run.admin"
-# autoriser le service account à utiliser le service artifact registry.
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
-  --role="roles/artifactregistry.writer"
+
 # lien qui identifie le provider name
 gcloud iam workload-identity-pools providers describe "$PROVIDER_NAME" \
   --project="$PROJECT_ID" \
