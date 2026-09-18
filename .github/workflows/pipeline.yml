@@ -61,12 +61,7 @@ jobs:
       - name: Debug GCP identities
         run: |
             echo "=== DEPLOYER ==="
-            gcloud auth list--format="value(account)"
-            echo "=== CURRENT CLOUD RUN SERVICE ACCOUNT ==="
-            gcloud run services describe jan26-cde-crypto-service \
-            --region=europe-west1 \
-            --project=jan26-cde-crypto \
-            --format="value(spec.template.spec.serviceAccountName)" || true
+            gcloud auth list
       
       - name: Deploy
         run: ./gcr_setup.sh
