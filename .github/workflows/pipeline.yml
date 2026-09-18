@@ -2,9 +2,9 @@ name: trading bot CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, test]
   pull_request:
-    branches: [main]
+    branches: [main, test]
 
 jobs:
   linting-job:
@@ -30,3 +30,23 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # Sortie en avertissement pour le reste des règles de style (n'échoue pas le build)
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  deploy-job:
+    runs-on: ubuntu-latest
+    # Le déploiement ne se déclenche QUE si le push ou la PR cible la branche 'main'
+    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+    # Optionnel mais recommandé : attend que le linting réussisse avant de déployer
+    needs: linting-job 
+    
+    steps:
+    - name: checkout du code
+      uses: actions/checkout@v4
+
+    - name: Configurer Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+        
+    - name: deploy
+      run: ./gcr_setup.sh
+

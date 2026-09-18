@@ -549,7 +549,7 @@ files = [
 google-auth = ">=2.14.1,<3.0.0"
 googleapis-common-protos = ">=1.69.2,<2.0.0"
 grpcio = [
-    {version = ">=1.59.0,<2.0.0", optional = true, markers = "python_version < \"3.14\" and extra == \"grpc\""},
+    {version = ">=1.59.0,<2.0.0", optional = true, markers = "extra == \"grpc\""},
     {version = ">=1.75.1,<2.0.0", optional = true, markers = "python_version >= \"3.14\" and extra == \"grpc\""},
 ]
 grpcio-status = [
@@ -652,6 +652,29 @@ google-auth = ">=2.14.1,<2.24.0 || >2.24.0,<2.25.0 || >2.25.0,<3.0.0"
 grpc = ["grpcio (>=1.59.0,<2.0.0)", "grpcio (>=1.75.1,<2.0.0) ; python_version >= \"3.14\"", "grpcio-status (>=1.59.0,<2.0.0)", "grpcio-status (>=1.75.1,<2.0.0) ; python_version >= \"3.14\""]
 
 [[package]]
+name = "google-cloud-secret-manager"
+version = "2.30.0"
+description = "Google Cloud Secret Manager API client library"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "google_cloud_secret_manager-2.30.0-py3-none-any.whl", hash = "sha256:0f285e77d09a73700e3fca9abbc77f844a50276989bf76d64a76b6e2b871e396"},
+    {file = "google_cloud_secret_manager-2.30.0.tar.gz", hash = "sha256:26ec87737731b483f7f95c26a8c7ab79e22cb66317c95006e7f6985dbc43c8a2"},
+]
+
+[package.dependencies]
+google-api-core = {version = ">=2.24.2,<3.0.0", extras = ["grpc"]}
+google-auth = ">=2.14.1,<2.24.0 || >2.24.0,<2.25.0 || >2.25.0,<3.0.0"
+grpc-google-iam-v1 = ">=0.14.2,<1.0.0"
+grpcio = [
+    {version = ">=1.59.0,<2.0.0", markers = "python_version < \"3.14\""},
+    {version = ">=1.75.1,<2.0.0", markers = "python_version >= \"3.14\""},
+]
+proto-plus = ">=1.26.1,<2.0.0"
+protobuf = ">=6.33.5,<8.0.0"
+
+[[package]]
 name = "google-cloud-storage"
 version = "3.13.1"
 description = "Google Cloud Storage API client library"
@@ -752,6 +775,7 @@ files = [
 ]
 
 [package.dependencies]
+grpcio = {version = ">=1.59.0,<2.0.0", optional = true, markers = "extra == \"grpc\""}
 protobuf = ">=6.33.5,<8.0.0"
 
 [package.extras]
@@ -850,6 +874,23 @@ files = [
 [package.extras]
 docs = ["Sphinx", "furo"]
 test = ["objgraph", "psutil", "setuptools"]
+
+[[package]]
+name = "grpc-google-iam-v1"
+version = "0.14.5"
+description = "IAM API client library"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "grpc_google_iam_v1-0.14.5-py3-none-any.whl", hash = "sha256:0f5e680b20aa0a9441e68c769da04d94d70fca4e43751a82d8abb8aa6a7181ca"},
+    {file = "grpc_google_iam_v1-0.14.5.tar.gz", hash = "sha256:07fd3a9fafb586588e771831fbfc8f6597050181d0c3b45e039d18b8fdc1aab5"},
+]
+
+[package.dependencies]
+googleapis-common-protos = {version = ">=1.69.2,<2.0.0", extras = ["grpc"]}
+grpcio = ">=1.59.0,<2.0.0"
+protobuf = ">=6.33.5,<8.0.0"
 
 [[package]]
 name = "grpcio"
@@ -2619,4 +2660,4 @@ scikit-learn = ["scikit-learn"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "f352645054ece462447c2c2d865660a30d12e0e9e924350df5271abc44a7dc5a"
+content-hash = "2b69974144d25ae786f2de7a18d571b6282aee3e3fd0f04622967f4acf9ff11b"

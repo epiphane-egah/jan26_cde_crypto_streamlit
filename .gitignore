@@ -220,3 +220,10 @@ poetry.lock
 pyproject.toml
 
 jan26-cde-crypto-3e6ed86f7bdf.json
+
+.neon
+.env.local
+node_modules/
+.env
+secret.json
+poetry.lock
