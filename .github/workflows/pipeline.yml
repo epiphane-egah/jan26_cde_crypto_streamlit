@@ -11,42 +11,57 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout du code
-      uses: actions/checkout@v4
+      - name: Checkout du code
+        uses: actions/checkout@v4
 
-    - name: Configurer Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.13'
+      - name: Configurer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
 
-    - name: Installer Flake8
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8
+      - name: Installer Flake8
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
 
-    - name: Analyser le code avec Flake8
-      run: |
-        # Arrête le build s'il y a des erreurs de syntaxe Python ou des symboles non définis
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Sortie en avertissement pour le reste des règles de style (n'échoue pas le build)
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Analyser le code avec Flake8
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 \
+            --max-line-length=127 --statistics
+
 
   deploy-job:
     runs-on: ubuntu-latest
-    # Le déploiement ne se déclenche QUE si le push ou la PR cible la branche 'main'
-    if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
-    # Optionnel mais recommandé : attend que le linting réussisse avant de déployer
-    needs: linting-job 
-    
+    needs: linting-job
+
+    environment: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
+
+    # Déploiement uniquement après un PUSH sur main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
-    - name: checkout du code
-      uses: actions/checkout@v4
+      - name: Checkout du code
+        uses: actions/checkout@v4
 
-    - name: Configurer Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.13'
-        
-    - name: deploy
-      run: ./gcr_setup.sh
+      - name: Authentification Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: jan26-cde-crypto
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
+      - name: Installer gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Vérifier authentification
+        run: |
+          gcloud auth list
+          gcloud config set project jan26-cde-crypto
+
+      - name: Deploy
+        run: ./gcr_setup.sh
