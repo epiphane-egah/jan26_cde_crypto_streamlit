@@ -54,7 +54,7 @@ gcloud iam service-accounts add-iam-policy-binding \
 # autoriser le service account à utiliser le service cloud run
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --member="serviceAccount:${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
-  --role="roles/run.developer"
+  --role="roles/run.admin"
 # autoriser le service account à utiliser le service artifact registry.
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --member="serviceAccount:${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com" \
