@@ -2,17 +2,10 @@ import time
 import psycopg2
 import streamlit as st
 from google.cloud import secretmanager
-from google.oauth2 import service_account
-
-
-credentials = service_account.Credentials.from_service_account_file(
-    "./jan26-cde-crypto-3e6ed86f7bdf.json")
-
-# export GOOGLE_APPLICATION_CREDENTIALS="/chemin/vers/service-account.json"
 
 
 def get_secret(project_id: str, secret_id: str, version: str = "latest") -> str:
-    client = secretmanager.SecretManagerServiceClient(credentials=credentials)
+    client = secretmanager.SecretManagerServiceClient()
 
     name = f"projects/{project_id}/secrets/{secret_id}/versions/{version}"
 

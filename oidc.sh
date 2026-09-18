@@ -54,5 +54,13 @@ gcloud iam workload-identity-pools providers describe "$PROVIDER_NAME" \
 # GCP_WIF_PROVIDER
 # GCP_SERVICE_ACCOUNT
 
+# ADC pour notre container
+gcloud iam service-accounts create container-runtime \
+  --display-name="Backend Cloud Run"
+
+gcloud secrets add-iam-policy-binding clients-database-url-pooler \
+  --member="serviceAccount:container-runtime@jan26-cde-crypto.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+
 
 

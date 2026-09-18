@@ -23,5 +23,5 @@ gcloud run deploy jan26-cde-crypto-service \
   --platform=managed \
   --region=europe-west1 \
   --port=8501 \
-  --service-account=github-cloud-run@jan26-cde-crypto.iam.gserviceaccount.com  \
+  --service-account=container-runtime@jan26-cde-crypto.iam.gserviceaccount.com  \
   --allow-unauthenticated
