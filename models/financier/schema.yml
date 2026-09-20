@@ -1,0 +1,37 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Données crypto brutes provenant des fichiers Parquet"
+
+    database: jan26-cde-crypto   # Projet GCP
+    schema: staging             # Dataset BigQuery
+
+    tables:
+      - name: staging_external
+        identifier: STAGING_EXTERNAL
+
+        columns:
+          - name: open_time
+            description: "Timestamp d'ouverture en millisecondes"
+
+          - name: crypto
+            description: "Paire de trading, ex: BTCUSDT"
+
+          - name: interval
+            description: "Intervalle, ex: 1h ou 1d"
+
+          - name: open
+            description: "Prix d'ouverture"
+
+          - name: close
+            description: "Prix de fermeture"
+
+          - name: high
+            description: "Prix le plus haut"
+
+          - name: low
+            description: "Prix le plus bas"
+
+          - name: volume
+            description: "Volume échangé"
