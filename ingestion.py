@@ -4,7 +4,8 @@ import itertools
 import re
 import pandas as pd
 from google.cloud import storage
-from utils import get_data_binance, convert_in_ms
+from utils import get_data_binance
+
 
 # Configuration Cloud Storage (Authentification automatique sur GCP)
 storage_client = storage.Client()
@@ -23,7 +24,7 @@ def recuperer_dernier_timestamp_global():
     bucket = storage_client.bucket(BUCKET_NAME)
     
     # On liste tous les fichiers globaux générés par le script
-    blobs = bucket.list_blobs(prefix="crypto_all_data_")
+    blobs = bucket.list_blobs(prefix="crypto_")
     
     timestamps_trouves = []
     pattern = r"_to_(\d+)\.parquet$"
@@ -44,7 +45,6 @@ def recuperer_dernier_timestamp_global():
 def executer_tache_hebdomadaire():
     # 1. Définition de la date d'exécution et conversion immédiate en millisecondes (end_time)
     date_maintenant = datetime.datetime.now()
-    date_execution_str = date_maintenant.strftime("%Y-%m-%d_%H-%M-%S")
     end_time = int(date_maintenant.timestamp() * 1000)
     
     # 2. Récupération du point de départ commun basé sur le dernier fichier du bucket
@@ -79,9 +79,12 @@ def executer_tache_hebdomadaire():
     if tous_les_dataframes:
         df_final = pd.concat(tous_les_dataframes, ignore_index=True)
         
-        nom_fichier = f"crypto_{date_execution_str}_to_{end_time}.parquet"
+        nom_fichier = f"crypto_{start_time}_to_{end_time}.parquet"
         chemin_gcs = f"gs://{BUCKET_NAME}/{nom_fichier}"
         
+        # supprimer les doublons
+        df_final.drop_duplicates()
+
         df_final.to_parquet(chemin_gcs, index=False, engine='pyarrow')
         
         print(f"✅ Succès : Fichier unique sauvegardé : {nom_fichier}")
@@ -90,5 +93,7 @@ def executer_tache_hebdomadaire():
         print("🚨 ALERTE CRITIQUE : Aucune donnée n'a pu être collectée ce coup-ci.")
         return "Aucune donnée récupérée", 204
 
+
 if __name__ == "__main__":
-    executer_tache_hebdomadaire()
+    print(recuperer_dernier_timestamp_global())
+    # executer_tache_hebdomadaire()

@@ -1,5 +1,4 @@
 import requests
-import datetime
 import time
 import certifi
 
@@ -39,9 +38,7 @@ def get_data_binance(symbol, interval,
                 "high": float(k[2]),
                 "low": float(k[3]),
                 "close": float(k[4]),
-                "volume": float(k[5]),
-                "interval": interval,
-                "crypto": symbol
+                "volume": float(k[5])
                 }
             result.append(candle)
         time.sleep(60)
@@ -61,13 +58,3 @@ def convert_in_ms(interval: str):
         return 3600*1000
     elif interval == "1d":
         return 24*3600*1000
-
-
-def get_historical_data(symbol, interval, nb_data):
-    """Cette fonction permet de prendre en entrée un symbole de crypto, 
-    un interval et la quantité de donnée souhaité et renvooie un json
-    """
-    end_time = int(datetime.datetime.today().timestamp()*1000)
-    start_time = end_time - convert_in_ms(interval) * nb_data
-    return get_data(symbol, interval,
-                    start_time=start_time, end_time=end_time)
