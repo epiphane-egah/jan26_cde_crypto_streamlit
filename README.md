@@ -215,11 +215,5 @@ streamlit run app/main.py
 
 ---
 
-## Licence
-
-Ce projet est distribué sous licence propriétaire. Tous droits réservés, sauf mention contraire.
-
----
-
 **Auteur** : *Epiphane Egah*
 **Contact** : *egahepiphane@gmail.com*
