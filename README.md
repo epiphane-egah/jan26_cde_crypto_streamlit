@@ -215,5 +215,7 @@ streamlit run app/main.py
 
 ---
 
+
 **Auteur** : *Epiphane Egah*
+
 **Contact** : *egahepiphane@gmail.com*
