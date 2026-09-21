@@ -1,2 +1,4 @@
 cron.log
 .mypy_cache
+logs/
+target/
