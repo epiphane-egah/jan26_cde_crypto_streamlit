@@ -8,7 +8,7 @@ with date_info as (
     select distinct
         timestamp_millis(cast(open_time as int64)) as open_timestamp
 
-    from {{ source('raw', 'staging_external') }}
+    from {{ source('staging', 'staging_external') }}
 
     {% if is_incremental() %}
 

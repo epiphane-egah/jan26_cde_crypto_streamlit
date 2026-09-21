@@ -1,37 +1,340 @@
 version: 2
 
 sources:
-  - name: raw
+  - name: staging
     description: "Données crypto brutes provenant des fichiers Parquet"
-
-    database: jan26-cde-crypto   # Projet GCP
-    schema: staging             # Dataset BigQuery
+    database: jan26-cde-crypto
+    schema: staging
 
     tables:
       - name: staging_external
-        identifier: STAGING_EXTERNAL
+        identifier: staging_external
+        description: "Table externe contenant les données brutes des cours de cryptomonnaies."
 
         columns:
           - name: open_time
-            description: "Timestamp d'ouverture en millisecondes"
+            description: "Timestamp d'ouverture de la bougie exprimé en millisecondes."
+            tests:
+              - not_null
 
-          - name: crypto
-            description: "Paire de trading, ex: BTCUSDT"
+          - name: symbole
+            description: "Symbole de la paire de trading, par exemple BTCUSDT."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["BTCUSDT", "ETHUSDT", "BNBUSDT"]
 
-          - name: interval
-            description: "Intervalle, ex: 1h ou 1d"
+          - name: intervalle
+            description: "Intervalle temporel de la bougie, par exemple 1h ou 1d."
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["1h", "1d"]
 
           - name: open
-            description: "Prix d'ouverture"
+            description: "Prix d'ouverture de la cryptomonnaie pour la période."
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  arguments:
+                    expression: ">= 0"
 
           - name: close
-            description: "Prix de fermeture"
+            description: "Prix de fermeture de la cryptomonnaie pour la période."
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  arguments:
+                    expression: ">= 0"
 
           - name: high
-            description: "Prix le plus haut"
+            description: "Prix le plus élevé atteint pendant la période."
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  arguments:
+                    expression: ">= 0"
 
           - name: low
-            description: "Prix le plus bas"
+            description: "Prix le plus bas atteint pendant la période."
+            tests:
+              - not_null
+              - dbt_utils.expression_is_true:
+                  arguments:
+                    expression: ">= 0"
 
           - name: volume
-            description: "Volume échangé"
+            description: "Volume total échangé pendant la période."
+            tests:
+              - not_null
+              - is_positive
+
+
+models:
+
+  # DIMENSION CRYPTO
+
+  - name: dim_crypto
+    description: >
+      Dimension contenant les différentes cryptomonnaies présentes
+      dans la base de données.
+
+    columns:
+      - name: id_crypto
+        description: "Identifiant unique de la cryptomonnaie."
+        tests:
+          - unique
+          - not_null
+
+      - name: symbole
+        description: "Symbole de la paire de trading associée à la cryptomonnaie."
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ["BTCUSDT", "ETHUSDT", "BNBUSDT"]
+
+      - name: nom
+        description: "Nom de la cryptomonnaie."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Ethereum", "Binance Coin", "Bitcoin"]
+
+  # DIMENSION INTERVALLE
+
+  - name: dim_interval
+    description: >
+      Dimension contenant les différents intervalles temporels
+      disponibles pour les bougies de marché.
+
+    columns:
+      - name: id_intervalle
+        description: "Identifiant unique de l'intervalle temporel."
+        tests:
+          - not_null
+          - unique
+
+      - name: code_intervalle
+        description: >
+          Code représentant la fréquence de la bougie,
+          par exemple 1h pour une heure ou 1d pour un jour.
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              arguments:
+                values: ["1h", "1d"]
+
+      - name: libelle
+        description: "Libellé lisible correspondant à l'intervalle temporel."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["une heure", "un jour"]
+
+
+  # ============================================================
+  # DIMENSION TEMPS
+  # ============================================================
+
+  - name: dim_temps
+    description: >
+      Dimension temporelle construite à partir du champ open_time
+      de la source raw.staging_external. Chaque ligne représente
+      un instant unique correspondant à l'ouverture d'une bougie.
+
+    columns:
+      - name: id_temps
+        description: >
+          Clé primaire de la dimension temps. Elle identifie de manière
+          unique un instant correspondant à l'ouverture d'une bougie.
+        tests:
+          - not_null
+          - unique
+
+      - name: date_heure
+        description: >
+          Date et heure correspondant au timestamp d'ouverture,
+          converties au format DATETIME.
+        tests:
+          - not_null
+          - unique
+
+      - name: annee
+        description: "Année extraite de la date d'ouverture."
+        tests:
+          - not_null
+
+      - name: mois
+        description: >
+          Numéro du mois extrait de la date d'ouverture.
+          Les valeurs sont comprises entre 1 et 12.
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 12
+
+      - name: jour
+        description: >
+          Numéro du jour dans le mois.
+          Les valeurs sont comprises entre 1 et 31.
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 31
+
+      - name: heure
+        description: >
+          Heure de la journée extraite du timestamp d'ouverture.
+          Les valeurs sont comprises entre 0 et 23.
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 23
+
+      - name: jour_semaine
+        description: "Nom du jour de la semaine correspondant à la date d'ouverture."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - Monday
+                  - Tuesday
+                  - Wednesday
+                  - Thursday
+                  - Friday
+                  - Saturday
+                  - Sunday
+
+      - name: trimestre
+        description: >
+          Numéro du trimestre de l'année correspondant à la date
+          d'ouverture. Les valeurs possibles sont 1, 2, 3 et 4.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4]
+                quote: false
+
+  # TABLE DE FAITS : COURS OHLCV
+
+  - name: fact_cours_ohlv
+    description: >
+      Table de faits contenant les bougies de marché OHLCV des
+      cryptomonnaies. Une ligne représente une bougie unique pour
+      une cryptomonnaie, un intervalle temporel et une date
+      d'ouverture donnés.
+
+    columns:
+      - name: id_bougie
+        description: >
+          Identifiant unique et stable de la bougie. Il est généré
+          à partir du symbole de la cryptomonnaie, de l'intervalle
+          et du timestamp d'ouverture.
+        tests:
+          - not_null
+          - unique
+
+      - name: id_crypto
+        description: >
+          Identifiant de la cryptomonnaie associée à la bougie.
+          Clé étrangère vers la dimension dim_crypto.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_crypto')
+                field: id_crypto
+
+      - name: id_temps
+        description: >
+          Identifiant temporel correspondant à la date et à l'heure
+          d'ouverture de la bougie. Clé étrangère vers dim_temps.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_temps')
+                field: id_temps
+
+      - name: id_intervalle
+        description: >
+          Identifiant de l'intervalle temporel de la bougie.
+          Clé étrangère vers la dimension dim_interval.
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_interval')
+                field: id_intervalle
+
+      - name: date_ouverture
+        description: >
+          Date et heure d'ouverture de la bougie, dérivée du
+          timestamp d'ouverture fourni par la source.
+        tests:
+          - not_null
+
+      - name: valeur_ouverture
+        description: >
+          Prix de la cryptomonnaie au début de la période
+          représentée par la bougie.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: valeur_fermeture
+        description: >
+          Prix de la cryptomonnaie à la fin de la période
+          représentée par la bougie.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: valeur_haute
+        description: >
+          Prix le plus élevé atteint par la cryptomonnaie
+          pendant la période représentée par la bougie.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: valeur_basse
+        description: >
+          Prix le plus bas atteint par la cryptomonnaie
+          pendant la période représentée par la bougie.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: volume
+        description: >
+          Volume total échangé pendant la période représentée
+          par la bougie.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
