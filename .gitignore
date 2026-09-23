@@ -227,3 +227,4 @@ node_modules/
 .env
 secret.json
 poetry.lock
+dbt_packages/

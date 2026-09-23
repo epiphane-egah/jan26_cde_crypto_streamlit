@@ -1,26 +1,10 @@
-FROM python:3.13-slim
+FROM python:3.12-slim
 
-WORKDIR /app/
+WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    cron \
-    tzdata \
-    && rm -rf /var/lib/apt/lists/*
-
-ENV TZ=Europe/Paris
-
-COPY requirements.txt /app/
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY cron/ /app/
-RUN chmod 0644 /app/*.py && \
-    mkdir -p logs && \
-    touch logs/cron.log logs/non_transactions.log
+COPY cron/ .
 
-
-COPY cron/cronjob /etc/cron.d/cronjob
-
-RUN chmod 0644 /etc/cron.d/cronjob && \
-    chown root:root /etc/cron.d/cronjob
-
-CMD ["cron", "-f", "-l", "2"]
+CMD ["python", "trade_horaire.py"]

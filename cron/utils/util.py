@@ -5,9 +5,27 @@ import json
 from decimal import Decimal
 from arch import arch_model
 import numpy as np
+from typing import List
+from google.cloud import secretmanager
 
 
-def get_data(symbol, interval, start_time, end_time):
+def get_data(symbol: str, interval: str,
+             start_time: int, end_time: int) -> List:
+    """_summary_
+
+    Args:
+        symbol (str): _description_
+        interval (str): _description_
+        start_time (int): _description_
+        end_time (int): _description_
+
+    Raises:
+        ValueError: _description_
+
+    Returns:
+        List: _description_
+    """
+
     url = "https://api.binance.com/api/v3/klines"
     
     result = []
@@ -149,3 +167,29 @@ def save_order(order, path):
     """
     with open(path, "a") as f:
         json.dump(order, f, indent=4)
+
+
+def get_secret(project_id: str,
+               secret_id: str,
+               version: str = "latest") -> str:
+    """Cette fonction permet de récupérer l'URL de la 
+    base de données postes hébergée sur Neon.
+
+    Args:
+        project_id (str): L'identifiant du projet sur gcp
+        secret_id (str): L'identifiant du projet dans le secretmanager
+        version (str, optional): La dernière version du secret. La valeur
+        par défaut est "latest".
+
+    Returns:
+        str: L'url de la base de données PostgreSQL hébergée sur Neon.
+    """
+    client = secretmanager.SecretManagerServiceClient()
+
+    name = f"projects/{project_id}/secrets/{secret_id}/versions/{version}"
+
+    response = client.access_secret_version(
+        request={"name": name}
+    )
+
+    return response.payload.data.decode("UTF-8")
