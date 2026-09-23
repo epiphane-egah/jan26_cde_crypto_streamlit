@@ -64,4 +64,4 @@ jobs:
             gcloud auth list
       
       - name: Deploy
-        run: ./gcr_setup.sh
+        run: ./gcr_setup.sh && ./gcr_jobs.sh
