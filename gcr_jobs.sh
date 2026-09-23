@@ -29,17 +29,9 @@ gcloud secrets add-iam-policy-binding clients-database-url-pooler \
     --member='serviceAccount:container-runtime@jan26-cde-crypto.iam.gserviceaccount.com' \
     --role='roles/secretmanager.secretAccessor'
 
-gcloud storage buckets update 'gs://trading-bot-bucket-epiphane-2026' --uniform-bucket-level-access
-gcloud storage managed-folders add-iam-policy-binding "gs://trading-bot-bucket-epiphane-2026/raw" \
-    --member='serviceAccount:container-runtime@jan26-cde-crypto.iam.gserviceaccount.com' \
-    --role='roles/storage.admin'
-gcloud storage managed-folders add-iam-policy-binding "gs://trading-bot-bucket-epiphane-2026/archive" \
-    --member='serviceAccount:container-runtime@jan26-cde-crypto.iam.gserviceaccount.com' \
-    --role='roles/storage.admin'
-
 gcloud projects add-iam-policy-binding $PROJECT_ID \
   --member="serviceAccount:container-runtime@jan26-cde-crypto.iam.gserviceaccount.com" \
-  --role="roles/storage.objectAdmin"
+  --role="roles/storage.admin"
 
 # Pour déployer un cloud run job j'ai besoin d'avoir les droits suivants :
 # Mais je suis connecter avec ADF comme admin, donc c'est bon
@@ -126,12 +118,12 @@ deploy_scheduler() {
 # mise en place des jobs et scheduler pour les jobs horaire
 job="trade-horaire" 
 deploy_run_job "$job"
-deploy_scheduler "$job" "30 * * * *"
+deploy_scheduler "$job" "0 * * * *"
 
 # mise en place des jobs et scheduler pour les jobs journaliers
 job="trade-journalier"
 deploy_run_job "$job"
-deploy_scheduler "$job" "0 10 * * *"
+deploy_scheduler "$job" "47 23 * * *"
 
 # mise en place des jobs et scheduler pour notre stockage des transactions
 job="table-setup"
