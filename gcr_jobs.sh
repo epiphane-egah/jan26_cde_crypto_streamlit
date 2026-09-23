@@ -15,9 +15,31 @@ gcloud services enable \
     cloudbuild.googleapis.com \
     cloudscheduler.googleapis.com
 
+# donner le droit au service account qui permet au shceduler de déclancher les run jobs
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --member="serviceAccount:$SERVICE_ACCOUNT" \
     --role="roles/run.invoker"
+
+# création d'un runtime service account pour mes run jobs afin d'accèder au secret et à cloud storage
+gcloud iam service-accounts describe container-runtime@jan26-cde-crypto.iam.gserviceaccount.com >/dev/null 2>&1 || \
+    gcloud iam service-accounts create container-runtime \
+    --display-name="Mon compte de service pour permettre au run jobs"
+
+gcloud secrets add-iam-policy-binding clients-database-url-pooler \
+    --member='serviceAccount:container-runtime@jan26-cde-crypto.iam.gserviceaccount.com' \
+    --role='roles/secretmanager.secretAccessor'
+
+gcloud storage buckets update 'gs://trading-bot-bucket-epiphane-2026' --uniform-bucket-level-access
+gcloud storage managed-folders add-iam-policy-binding "gs://trading-bot-bucket-epiphane-2026/raw" \
+    --member='serviceAccount:container-runtime@jan26-cde-crypto.iam.gserviceaccount.com' \
+    --role='roles/storage.admin'
+gcloud storage managed-folders add-iam-policy-binding "gs://trading-bot-bucket-epiphane-2026/archive" \
+    --member='serviceAccount:container-runtime@jan26-cde-crypto.iam.gserviceaccount.com' \
+    --role='roles/storage.admin'
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:container-runtime@jan26-cde-crypto.iam.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
 
 # Pour déployer un cloud run job j'ai besoin d'avoir les droits suivants :
 # Mais je suis connecter avec ADF comme admin, donc c'est bon
@@ -50,6 +72,7 @@ deploy_run_job() {
         gcloud run jobs update "$job" \
             --image="$IMAGE" \
             --region="$REGION" \
+            --service-account="container-runtime@jan26-cde-crypto.iam.gserviceaccount.com" \
             --command="python" \
             --args="$job.py"
     else
@@ -58,6 +81,7 @@ deploy_run_job() {
         gcloud run jobs create "$job" \
             --image="$IMAGE" \
             --region="$REGION" \
+            --service-account="container-runtime@jan26-cde-crypto.iam.gserviceaccount.com" \
             --command="python" \
             --args="$job.py"
     fi
@@ -102,7 +126,7 @@ deploy_scheduler() {
 # mise en place des jobs et scheduler pour les jobs horaire
 job="trade-horaire" 
 deploy_run_job "$job"
-deploy_scheduler "$job" "5 * * * *"
+deploy_scheduler "$job" "30 * * * *"
 
 # mise en place des jobs et scheduler pour les jobs journaliers
 job="trade-journalier"

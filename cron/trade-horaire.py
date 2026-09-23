@@ -31,13 +31,9 @@ LOG = """    Transaction non effectuée
 
 # connection à notre bucket de transaction
 client = storage.Client("jan26-cde-crypto")
-try:
-    bucket_name = "trading-bot-bucket-epiphane-2026"
-    bucket = client.create_bucket(bucket_name, location="europe-west1")
-    print(f"Bucket '{bucket_name}' created.")
-except Conflict:
-    bucket = client.get_bucket(bucket_name)
-    print(f"Bucket '{bucket_name}' already exists, connected instead.")
+bucket_name = "trading-bot-bucket-epiphane-2026"
+bucket = client.get_bucket(bucket_name)
+print(f"Bucket '{bucket_name}' already exists, connected instead.")
 
 
 def trade_bnb():

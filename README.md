@@ -16,13 +16,8 @@ Bot de trading algorithmique pour crypto-monnaies, articulé autour d'une archit
   4. [Trading Application](#4-trading-application)
   5. [Client Strategy Interface](#5-client-strategy-interface)
   6. [Observabilité & Monitoring](#6-observabilité--monitoring)
-- [Flux de données](#flux-de-données)
 - [CI/CD & Déploiement](#cicd--déploiement)
-- [Structure du projet](#structure-du-projet)
-- [Prérequis](#prérequis)
-- [Installation](#installation)
-- [Roadmap](#roadmap)
-- [Licence](#licence)
+
 
 ---
 
@@ -35,7 +30,7 @@ Ce projet met en œuvre un pipeline de bout en bout pour la génération et l'ex
 3. **Modélisation** combinant machine learning (**XGBoost**) et économétrie financière (modèles **ARCH**), évaluée par **backtesting** systématique.
 4. **Sélection automatique** du modèle le plus performant, déployé dans un service de trading en production.
 5. **Interface client** sous forme d'application **Streamlit**, déployée sur **Cloud Run** via une chaîne CI/CD complète.
-6. **Persistance** des données clients et des opérations de trading dans une base **PostgreSQL (Neon)**.
+6. **Persistance** des données clients dans une base **PostgreSQL (Neon) et les données de transactions dans un bucket S3**.
 7. **Observabilité** via Cloud Logging, Prometheus et Grafana.
 
 ---
@@ -59,7 +54,6 @@ Le schéma ci-dessous synthétise l'ensemble du pipeline, de l'ingestion des don
 | Transformation de données | dbt |
 | Machine Learning | XGBoost |
 | Modélisation économétrique | ARCH (volatilité) |
-| Backtesting | Framework interne de backtesting |
 | Base de données applicative | PostgreSQL (Neon) |
 | Application / Bot de trading | Python, Cloud Run |
 | Interface utilisateur | Streamlit |
@@ -86,7 +80,7 @@ Le schéma ci-dessous synthétise l'ensemble du pipeline, de l'ingestion des don
 
 - **XGBoost training** : entraînement d'un modèle de machine learning supervisé pour la prédiction de signaux/directions de marché.
 - **ARCH training** : entraînement d'un modèle économétrique de type ARCH pour la modélisation de la volatilité conditionnelle.
-- **Backtesting** : évaluation historique des deux approches sur des données out-of-sample.
+- **Backtesting** : évaluation historique des deux approches.
 - **Model comparison and selection** : comparaison des performances (métriques de rendement, de risque, de drawdown, etc.) et sélection du modèle optimal.
 - **Selected ARCH model** *(ou XGBoost selon le résultat)* : modèle final retenu et transmis à l'application de trading.
 
@@ -110,33 +104,8 @@ Le schéma ci-dessous synthétise l'ensemble du pipeline, de l'ingestion des don
 
 ---
 
-## Flux de données
-
-```
-[Cloud Scheduler]
-      │ trigger hebdomadaire
-      ▼
-[API Market Data] → [GCS Bucket - Parquet]
-      │
-      ▼
-[dbt] → [BigQuery]
-      │
-      ├────────────► [XGBoost Training] ─┐
-      │                                   ├──► [Backtesting] ──► [Model Selection]
-      └────────────► [ARCH Training]  ───┘                             │
-                                                                        ▼
-                                                          [Trading Service - Cloud Run]
-                                                                        │
-                                                                        ▼
-                                                          [Neon PostgreSQL DB]
-                                                                        │
-                                                                        ▼
-                                                    [Streamlit App] ◄── [Client Users]
-```
-
----
-
 ## CI/CD & Déploiement
+
 
 1. Push sur la branche principale → déclenchement de **GitHub Actions**.
 2. Build & tests automatisés.
@@ -144,77 +113,6 @@ Le schéma ci-dessous synthétise l'ensemble du pipeline, de l'ingestion des don
 4. Mise à disposition de l'application **Streamlit** aux utilisateurs finaux.
 
 ---
-
-## Structure du projet
-
-```
-.
-├── ingestion/              # Scripts d'extraction API → GCS (Parquet)
-├── transformation/         # Modèles dbt
-├── modeling/
-│   ├── xgboost/            # Entraînement et sérialisation du modèle XGBoost
-│   └── arch/                # Entraînement du modèle ARCH
-├── backtesting/            # Framework et résultats de backtesting
-├── trading_service/        # Service de trading (Cloud Run)
-├── app/                    # Application Streamlit (interface client)
-├── infra/                  # IaC / scripts gcloud
-├── .github/workflows/      # Pipelines CI/CD GitHub Actions
-├── docs/
-│   └── architecture.png
-└── README.md
-```
-
----
-
-## Prérequis
-
-- Compte **GCP** avec les APIs suivantes activées : Cloud Storage, BigQuery, Cloud Run, Cloud Scheduler, Cloud Logging.
-- **Python 3.10+**
-- **dbt-core** et l'adaptateur `dbt-bigquery`
-- **gcloud CLI** configuré et authentifié
-- Base **Neon PostgreSQL** provisionnée
-- Compte de service GCP avec les droits IAM nécessaires
-
----
-
-## Installation
-
-```bash
-# Cloner le dépôt
-git clone <repo_url>
-cd <repo_name>
-
-# Créer un environnement virtuel
-python -m venv venv
-source venv/bin/activate
-
-# Installer les dépendances
-pip install -r requirements.txt
-
-# Authentification GCP
-gcloud auth login
-gcloud config set project <PROJECT_ID>
-
-# Lancer les transformations dbt
-cd transformation
-dbt run
-
-# Lancer l'application Streamlit en local
-streamlit run app/main.py
-```
-
----
-
-## Roadmap
-
-- [ ] Ajout de modèles de marché supplémentaires (LSTM, Prophet, etc.)
-- [ ] Automatisation complète du re-entraînement des modèles
-- [ ] Alerting avancé via Grafana (Slack/Email)
-- [ ] Tests de charge sur le service de trading
-- [ ] Support multi-exchange
-
----
-
 
 **Auteur** : *Epiphane Egah*
 
