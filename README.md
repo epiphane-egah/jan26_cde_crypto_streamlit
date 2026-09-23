@@ -65,18 +65,18 @@ Le schéma ci-dessous synthétise l'ensemble du pipeline, de l'ingestion des don
 
 ## Description des modules
 
-### 1. Data Ingestion
+### 1. Data Ingestion (Branche extract-load)
 
 - **Weekly scheduled trigger** : déclenchement automatique hebdomadaire (Cloud Scheduler) de la collecte des données de marché.
 - **API data extraction on GCP** : extraction des données depuis une ou plusieurs API de marché crypto.
 - **Google Cloud Storage bucket (Parquet files)** : stockage des données brutes au format Parquet, servant de zone de dépôt (landing zone) avant transformation.
 
-### 2. Data Transformation
+### 2. Data Transformation (Branche dbt)
 
 - **dbt transformations** : nettoyage, normalisation et enrichissement des données via des modèles dbt versionnés.
 - **BigQuery datasets and tables** : matérialisation des tables analytiques prêtes à être consommées par les modules de modélisation.
 
-### 3. Machine Learning & Backtesting
+### 3. Machine Learning & Backtesting (Branche machine-learning)
 
 - **XGBoost training** : entraînement d'un modèle de machine learning supervisé pour la prédiction de signaux/directions de marché.
 - **ARCH training** : entraînement d'un modèle économétrique de type ARCH pour la modélisation de la volatilité conditionnelle.
@@ -84,12 +84,12 @@ Le schéma ci-dessous synthétise l'ensemble du pipeline, de l'ingestion des don
 - **Model comparison and selection** : comparaison des performances (métriques de rendement, de risque, de drawdown, etc.) et sélection du modèle optimal.
 - **Selected ARCH model** *(ou XGBoost selon le résultat)* : modèle final retenu et transmis à l'application de trading.
 
-### 4. Trading Application
+### 4. Trading Application (Branche main)
 
 - **Google Cloud trading jobs/service** : service GCP exécutant la stratégie de trading en production à partir du modèle sélectionné.
 - **Neon PostgreSQL database** : base de données hébergeant les informations clients et l'historique des opérations de trading.
 
-### 5. Client Strategy Interface
+### 5. Client Strategy Interface (Branche main)
 
 - **GitHub Actions CI/CD** : pipeline d'intégration et de déploiement continu.
 - **gcloud CLI** : déploiement manuel/scripté complémentaire vers GCP.
