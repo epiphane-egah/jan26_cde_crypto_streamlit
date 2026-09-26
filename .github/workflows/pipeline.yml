@@ -2,9 +2,9 @@ name: trading bot CI
 
 on:
   push:
-    branches: [main, test]
+    branches: [main, test, dbt]
   pull_request:
-    branches: [main, test]
+    branches: [main, test, dbt]
 
 jobs:
   linting-job:
@@ -65,3 +65,42 @@ jobs:
       
       - name: Deploy
         run: ./gcr_setup.sh && ./gcr_jobs.sh
+  
+  dbt-build-jobb:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'dbt' && 'production' || 'dev' }} 
+
+    # Déploiement uniquement après un PUSH sur main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+  
+      - name: Authentification Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: jan26-cde-crypto
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+        
+      - name: Installer gcloud
+        uses: google-github-actions/setup-gcloud@v3
+  
+      - name: Debug GCP identities
+        run: |
+            echo "=== DEPLOYER ==="
+            gcloud auth list
+        
+      - name: Deploy
+        run: ./gcr_setup.sh && ./gcr_jobs.sh
+
+    
+
+
+
+
+
