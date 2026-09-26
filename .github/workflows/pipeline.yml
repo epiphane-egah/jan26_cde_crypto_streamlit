@@ -35,11 +35,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: linting-job
 
+    # Déploiement uniquement après un PUSH sur main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
     environment: ${{ github.ref_name == 'main' && 'production' || 'dev' }}
 
-    # Déploiement uniquement après un PUSH sur main
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
     permissions:
       contents: read
       id-token: write
@@ -66,13 +66,14 @@ jobs:
       - name: Deploy
         run: ./gcr_setup.sh && ./gcr_jobs.sh
   
-  dbt-build-jobb:
+  dbt-build-job:
     runs-on: ubuntu-latest
+
+    # Déploiement uniquement après un PUSH sur main
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dbt'
+    
     environment: ${{ github.ref_name == 'dbt' && 'production' || 'dev' }} 
 
-    # Déploiement uniquement après un PUSH sur main
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
     permissions:
       contents: read
       id-token: write
@@ -96,7 +97,7 @@ jobs:
             gcloud auth list
         
       - name: Deploy
-        run: ./gcr_setup.sh && ./gcr_jobs.sh
+        run: ./dbt_jobs.sh
 
     
 
