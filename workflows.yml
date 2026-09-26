@@ -1,0 +1,8 @@
+main:
+  params: [event]
+  steps:
+    - run_dbt:
+        call: googleapis.run.v2.projects.locations.jobs.run
+        args:
+          name: ${"projects/jan26-cde-crypto/locations/europe-west1/jobs/my-dbt-transformation"}
+        result: execution
