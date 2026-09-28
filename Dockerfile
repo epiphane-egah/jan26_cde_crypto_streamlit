@@ -8,6 +8,8 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 
-CMD ["sh", "-c", "dbt build"]
+ENV DBT_PROFILES_DIR=.
+
+ENTRYPOINT ["sh", "-c", "dbt build"]
 
 

@@ -24,6 +24,12 @@ gcloud iam service-accounts describe dbt-runtime@jan26-cde-crypto.iam.gserviceac
 
 # Donner à mon compte de service les droits d'accès et de création de tables dans BigQuery
 # Les accès ont été attribués dans la console, car le client bq permet de donner les droits au niveau des datasets
+gcloud projects add-iam-policy-binding jan26-cde-crypto \
+    --member="serviceAccount:dbt-runtime@jan26-cde-crypto.iam.gserviceaccount.com" \
+    --role="roles/bigquery.user"
+gcloud projects add-iam-policy-binding jan26-cde-crypto \
+    --member="serviceAccount:dbt-runtime@jan26-cde-crypto.iam.gserviceaccount.com" \
+    --role="roles/bigquery.dataEditor"
 
 
 # Créer un Cloud Run Job ou le mettre à jour s'il existe déjà
@@ -35,7 +41,10 @@ then
     gcloud run jobs update my-dbt-transformation \
         --image="europe-west1-docker.pkg.dev/jan26-cde-crypto/dbt-repo/dbt_jobs_img:$TAG" \
         --region="europe-west1" \
-        --service-account="dbt-runtime@jan26-cde-crypto.iam.gserviceaccount.com"
+        --service-account="dbt-runtime@jan26-cde-crypto.iam.gserviceaccount.com" \
+        --set-env-vars=DBT_PROFILES_DIR=.
+
+
 else
      gcloud run jobs create my-dbt-transformation \
         --image="europe-west1-docker.pkg.dev/jan26-cde-crypto/dbt-repo/dbt_jobs_img:$TAG" \
