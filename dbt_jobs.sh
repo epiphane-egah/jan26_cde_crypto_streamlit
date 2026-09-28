@@ -5,6 +5,8 @@ set -e
 TAG=$(date '+%Y-%m-%d-%H-%M')
 docker buildx build --platform linux/amd64 -t dbt_job_img:$TAG .
 
+# authentification Docker pour pouvoir push
+gcloud auth configure-docker europe-west1-docker.pkg.dev
 # Créer un dépôt Artifact Registry sur GCP s'il n'existe pas
 gcloud artifacts repositories describe dbt-repo 1>/dev/null 2>&1 --location="europe-west1" || \
     gcloud artifacts repositories create dbt-repo \
