@@ -5,10 +5,9 @@ jan26_cde_crypto_streamlit:
       job_execution_timeout_seconds: 300
       job_retries: 1
       location: europe-west1
-      method: service-account
+      method: oauth
       priority: interactive
       project: jan26-cde-crypto
       threads: 2
       type: bigquery
-      keyfile_json: "{{ env_var('DBT_SA_KEY_JSON') }}"
   target: dev
