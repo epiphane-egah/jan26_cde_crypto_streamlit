@@ -61,9 +61,9 @@ gcloud services enable eventarc.googleapis.com \
 # gcs_service_account=$(gcloud storage service-agent \
 #   --project=jan26-cde-crypto)
 
-gcloud projects add-iam-policy-binding jan26-cde-crypto \
-    --member="serviceAccount:service-975242104567@gs-project-accounts.iam.gserviceaccount.com" \
-    --role="roles/pubsub.publisher"
+# gcloud projects add-iam-policy-binding jan26-cde-crypto \
+#     --member="serviceAccount:service-975242104567@gs-project-accounts.iam.gserviceaccount.com" \
+#     --role="roles/pubsub.publisher"
 
 gcloud envtarc triggers describe my-dbt-trigger 1>/dev/null 2>&1 || \
     gcloud eventarc triggers create my-dbt-trigger \
