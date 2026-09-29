@@ -65,7 +65,7 @@ gcloud services enable eventarc.googleapis.com \
 #     --member="serviceAccount:service-975242104567@gs-project-accounts.iam.gserviceaccount.com" \
 #     --role="roles/pubsub.publisher"
 
-gcloud envtarc triggers describe my-dbt-trigger 1>/dev/null 2>&1 || \
+gcloud eventarc triggers describe my-dbt-trigger --location=eu 1>/dev/null 2>&1 || \
     gcloud eventarc triggers create my-dbt-trigger \
     --location="eu" \
     --destination-workflow="my-dbt-workflow" \
