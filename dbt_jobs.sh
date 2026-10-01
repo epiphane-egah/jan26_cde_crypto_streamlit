@@ -44,7 +44,7 @@ then
         --image="europe-west1-docker.pkg.dev/jan26-cde-crypto/dbt-repo/dbt_jobs_img:$TAG" \
         --region="europe-west1" \
         --service-account="dbt-runtime@jan26-cde-crypto.iam.gserviceaccount.com" \
-        --set-env-vars=DBT_PROFILES_DIR=.
+        # --set-env-vars=DBT_PROFILES_DIR=.
 
 
 else

@@ -6,7 +6,6 @@ jan26_cde_crypto_streamlit:
       job_retries: 1
       location: europe-west1
       method: oauth
-      priority: interactive
       project: jan26-cde-crypto
       threads: 2
       type: bigquery
