@@ -64,7 +64,7 @@ jobs:
             gcloud auth list
       
       - name: Deploy
-        run: ./gcr_setup.sh && ./gcr_jobs.sh
+        run: frontend/gcr_setup.sh && backend/flask.sh && cron/gcr_jobs.sh
   
   dbt-build-job:
     runs-on: ubuntu-latest

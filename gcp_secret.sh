@@ -2,6 +2,10 @@ gcloud services enable secretmanager.googleapis.com
 
 gcloud secrets create google-application-credentials \
   --data-file="secret.json"
+
+gcloud secrets create smtp-config \
+  --data-file="secret.json"
+
 # gcloud secrets versions add google-application-credentials --data-file="secret.json"
 
 gcloud secrets list

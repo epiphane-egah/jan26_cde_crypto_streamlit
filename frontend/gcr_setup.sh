@@ -14,7 +14,10 @@ gcloud auth configure-docker europe-west1-docker.pkg.dev
 # gcloud artifacts repositories list
 
 TAG=$(date +%Y-%m-%d_%Hh%M)
-docker buildx build --platform linux/amd64 -f frontend.yml -t trading-bot-frontend:$TAG .
+docker buildx build --platform linux/amd64 -t trading-bot-frontend:$TAG frontend/.
+# --build-arg VITE_API_URL="https://jan26-cde-crypto-api-975242104567.europe-west1.run.app" \
+
+
 docker tag trading-bot-frontend:$TAG europe-west1-docker.pkg.dev/jan26-cde-crypto/jan26-cde-crypto/trading-bot-frontend:$TAG
 docker push europe-west1-docker.pkg.dev/jan26-cde-crypto/jan26-cde-crypto/trading-bot-frontend:$TAG
 
