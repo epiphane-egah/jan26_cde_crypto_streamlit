@@ -9,7 +9,7 @@ PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(project
 SERVICE_ACCOUNT="${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
 
 TAG=$(date +%Y-%m-%d_%Hh%M)
-docker buildx build --platform linux/amd64 -f cronjob.yml -t trading-bot-cronjob:$TAG cron/.
+docker buildx build --platform linux/amd64 -t trading-bot-cronjob:$TAG cron/.
 docker tag trading-bot-cronjob:$TAG europe-west1-docker.pkg.dev/jan26-cde-crypto/jan26-cde-crypto/trading-bot-cronjob:$TAG
 docker push europe-west1-docker.pkg.dev/jan26-cde-crypto/jan26-cde-crypto/trading-bot-cronjob:$TAG
 IMAGE="europe-west1-docker.pkg.dev/jan26-cde-crypto/jan26-cde-crypto/trading-bot-cronjob:$TAG"

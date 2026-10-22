@@ -8,7 +8,7 @@ set -Eeuo pipefail
 PROJECT_NAME="jan26-cde-crypto"
 DATABASE="Clients"
 
-DDL_FILE="../postgres/postgres_ddl.sql"
+DDL_FILE="./postgres_ddl.sql"
 ENV_FILE=".env"
 
 # Secret contenant les credentials applicatifs
