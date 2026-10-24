@@ -16,7 +16,8 @@ from utils.util import (  # noqa: E402
     fit_arch,
     forecast_volatility,
     update_balance,
-    get_secret
+    get_secret,
+    log_event
 )
 
 MARGE_SECURITE_FRAIS = Decimal("0.999")
@@ -28,16 +29,6 @@ LOG = """    Transaction non effectuée
         Heure:{heure}
         Nom du client:{prenom} {nom}
 """
-
-# connection à notre bucket de transaction
-client = storage.Client("jan26-cde-crypto")
-try:
-    bucket_name = "trading-bot-bucket-epiphane-2026"
-    bucket = client.create_bucket(bucket_name, location="europe-west1")
-    print(f"Bucket '{bucket_name}' created.")
-except Conflict:
-    bucket = client.get_bucket(bucket_name)
-    print(f"Bucket '{bucket_name}' already exists, connected instead.")
 
 
 def trade_bnb():
@@ -431,8 +422,27 @@ def trade_eth():
 
 
 if __name__ == "__main__":
-    trade_bnb()
-    time.sleep(10)
-    trade_btc()
-    time.sleep(10)
-    trade_eth()
+    # connection à notre bucket de transaction
+    client = storage.Client("jan26-cde-crypto")
+    try:
+        bucket_name = "trading-bot-bucket-epiphane-2026"
+        bucket = client.create_bucket(bucket_name, location="europe-west1")
+        print(f"Bucket '{bucket_name}' created.")
+    except Conflict:
+        bucket = client.get_bucket(bucket_name)
+        print(f"Bucket '{bucket_name}' already exists, connected instead.")
+    
+    start = time.time()
+    try:
+        # trading
+        trade_bnb()
+        time.sleep(10)
+        trade_btc()
+        time.sleep(10)
+        trade_eth()
+        log_event("hourly_trade_job_success", job="hourly",
+                  duration_s=round(time.time() - start, 2))
+    except Exception as e:
+        log_event("hourly_trade_job_failed", severity="ERROR",
+                  job="hourly", error=str(e))
+        raise

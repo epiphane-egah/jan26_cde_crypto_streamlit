@@ -1,7 +1,9 @@
 from zoneinfo import ZoneInfo
 from google.cloud import storage
+import time
 import gzip
 from datetime import datetime
+from utils.util import log_event
 
 BUCKET_NAME = "trading-bot-bucket-epiphane-2026"
 SOURCE_PREFIX = "raw/"
@@ -66,4 +68,13 @@ def consolidate():
 
 
 if __name__ == "__main__":
-    consolidate()
+    start = time.time()
+    try:
+        consolidate()
+
+        log_event("gcs_cleaning_job_success", job="monthly",
+                  duration_s=round(time.time() - start, 2))
+    except Exception as e:
+        log_event("gcs_cleaning_job_failed", severity="ERROR",
+                  job="monthly", error=str(e))
+        raise

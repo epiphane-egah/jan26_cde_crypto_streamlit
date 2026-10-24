@@ -1,6 +1,7 @@
 import requests
 import datetime
 import certifi
+import time
 import json
 from decimal import Decimal
 from arch import arch_model
@@ -193,3 +194,7 @@ def get_secret(project_id: str,
     )
 
     return response.payload.data.decode("UTF-8")
+
+
+def log_event(event, severity="INFO", **fields):
+    print(json.dumps({"severity": severity, "event": event, **fields}))
