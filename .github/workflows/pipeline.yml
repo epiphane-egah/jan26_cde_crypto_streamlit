@@ -64,12 +64,12 @@ jobs:
             gcloud auth list
       
       - name: Deploy
-        run: ./gcr_setup.sh && ./gcr_jobs.sh
+        run: frontend/gcr_setup.sh && backend/flask.sh && cron/gcr_jobs.sh
   
   dbt-build-job:
     runs-on: ubuntu-latest
 
-    # Déploiement uniquement après un PUSH sur main
+    # Déploiement uniquement après un PUSH sur dbt
     if: github.event_name == 'push' && github.ref == 'refs/heads/dbt'
     
     environment: ${{ github.ref_name == 'dbt' && 'production' || 'dev' }} 
@@ -100,8 +100,3 @@ jobs:
         run: ./dbt_jobs.sh
 
     
-
-
-
-
-
