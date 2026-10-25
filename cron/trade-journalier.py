@@ -440,9 +440,9 @@ if __name__ == "__main__":
         trade_btc()
         time.sleep(10)
         trade_eth()
-        log_event("daily_trade_job_success", job="daily",
+        log_event("daily_trade_job_success", job="daily_trading",
                   duration_s=round(time.time() - start, 2))
     except Exception as e:
         log_event("daily_trade_job_failed", severity="ERROR",
-                  job="daily", error=str(e))
+                  job="daily_trading", error=str(e))
         raise

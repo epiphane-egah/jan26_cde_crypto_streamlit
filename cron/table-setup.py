@@ -72,9 +72,9 @@ if __name__ == "__main__":
     try:
         consolidate()
 
-        log_event("gcs_cleaning_job_success", job="monthly",
+        log_event("gcs_cleaning_job_success", job="gcs_monthly_cleaning",
                   duration_s=round(time.time() - start, 2))
     except Exception as e:
         log_event("gcs_cleaning_job_failed", severity="ERROR",
-                  job="monthly", error=str(e))
+                  job="gcs_monthly_cleaning", error=str(e))
         raise
