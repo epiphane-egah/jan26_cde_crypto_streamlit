@@ -1,4 +1,3 @@
-import sys
 from decimal import Decimal
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -436,6 +435,7 @@ if __name__ == "__main__":
     
     start = time.time()
     try:
+        raise Exception
         # trading
         trade_bnb()
         time.sleep(10)

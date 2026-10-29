@@ -1,4 +1,3 @@
-import sys
 from zoneinfo import ZoneInfo
 from google.cloud import storage
 import time
@@ -69,9 +68,9 @@ def consolidate():
 
 
 if __name__ == "__main__":
-    sys.exit(1)
     start = time.time()
     try:
+        raise Exception
         consolidate()
 
         log_event("gcs_cleaning_job_success", job="gcs_monthly_cleaning",

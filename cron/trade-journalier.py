@@ -1,4 +1,3 @@
-import sys
 from decimal import Decimal
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -423,7 +422,6 @@ def trade_eth():
 
 
 if __name__ == "__main__":
-    sys.exit(1)
     # connection à notre bucket de transaction
     client = storage.Client("jan26-cde-crypto")
     try:
@@ -436,6 +434,7 @@ if __name__ == "__main__":
     
     start = time.time()
     try:
+        raise Exception
         # trading
         trade_bnb()
         time.sleep(10)
