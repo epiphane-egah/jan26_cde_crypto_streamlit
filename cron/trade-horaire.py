@@ -422,7 +422,6 @@ def trade_eth():
 
 
 if __name__ == "__main__":
-    sys.exit(1)
     # connection à notre bucket de transaction
     client = storage.Client("jan26-cde-crypto")
     try:
