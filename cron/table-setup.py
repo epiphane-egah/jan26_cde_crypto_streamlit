@@ -70,7 +70,6 @@ def consolidate():
 if __name__ == "__main__":
     start = time.time()
     try:
-        raise Exception
         consolidate()
 
         log_event("gcs_cleaning_job_success", job="gcs_monthly_cleaning",

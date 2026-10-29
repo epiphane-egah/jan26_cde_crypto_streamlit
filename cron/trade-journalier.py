@@ -434,7 +434,6 @@ if __name__ == "__main__":
     
     start = time.time()
     try:
-        raise Exception
         # trading
         trade_bnb()
         time.sleep(10)
