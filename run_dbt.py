@@ -9,6 +9,14 @@ def log(event, severity="INFO", **fields):
     print(json.dumps({"severity": severity, "event": event, **fields}), flush=True)
 
 
+try:
+    raise Exception
+    log("dbt_job_success", job="dbt")
+except Exception:
+    log("dbt_job_failed", severity="ERROR", job="dbt",
+        exit_code=1)
+sys.exit(1)
+
 cmd = sys.argv[1:] or ["dbt", "build"]
 start = time.time()
 
