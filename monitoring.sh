@@ -1,23 +1,9 @@
 #!/usr/bin/env bash
-# ======================================================================
-# setup_monitoring.sh
-# Supervision complète du projet jan26-cde-crypto :
-#   - droits OpenTelemetry du service account de l'API
-#   - canal de notification email
-#   - métriques basées sur les logs (jobs, cloud function, scheduler)
-#   - 2 uptime checks : /api/health (liveness) et /api/health/db (base)
-#   - alertes API (PromQL + uptime) et alertes jobs (échec / absence)
-#
-# Idempotent : relancer le script ignore ce qui existe déjà.
-# Les alertes PromQL dont la métrique n'a pas encore été émise sont
-# marquées "en attente" : relancer le script plus tard les crée.
-# Prérequis : gcloud (authentifié) et jq.
-# ======================================================================
+
 set -euo pipefail
 
-# ------------------------------------------------------------------
 # Configuration
-# ------------------------------------------------------------------
+
 PROJECT_ID="jan26-cde-crypto"
 SERVICE_ACCOUNT="container-runtime@jan26-cde-crypto.iam.gserviceaccount.com"
 REGION="europe-west1"
@@ -25,19 +11,17 @@ SERVICE_NAME="jan26-cde-crypto-api"
 NAME="Alertes Trading"
 EMAIL="egahepiphane@gmail.com"
 
-M="workload_googleapis_com"          # préfixe PromQL des métriques OpenTelemetry
-MR="generic_task"                    # type de ressource monitorée des métriques OTel
-                                     # (à vérifier dans Metrics Explorer si une requête échoue)
-SEL="monitored_resource=\"${MR}\""   # sélecteur exigé par PromQL
+M="workload_googleapis_com"          
+MR="generic_task"                    
+                                    
+SEL="monitored_resource=\"${MR}\""   
 
-HEALTH_PATH="/api/health"            # liveness : {"status":"ok", ...}
-HEALTH_DB_PATH="/api/health/db"      # test DB   : {"database":"connected", ...}
+HEALTH_PATH="/api/health"           
+HEALTH_DB_PATH="/api/health/db" 
 UPTIME_NAME="trading-api-liveness"
 UPTIME_DB_NAME="trading-api-health-db"
-UPTIME_DB_PERIOD=10                  # minutes (évite de réveiller la base trop souvent)
+UPTIME_DB_PERIOD=10  
 
-# Cloud Monitoring exige un filtre sur resource.type dans chaque alerte de métrique de logs.
-# Cloud Function d'extraction : 1re gen = cloud_function, 2e gen = cloud_run_revision.
 # Pour connaître le vôtre :
 #   gcloud logging read 'jsonPayload.job="weekly_extract"' --limit=1 --format="value(resource.type)"
 EXTRACT_RESOURCE_FILTER='resource.type=one_of("cloud_run_revision","cloud_function")'
@@ -57,9 +41,7 @@ done
 
 gcloud config set project "$PROJECT_ID"
 
-# ------------------------------------------------------------------
 # 0. APIs et droits du service account de l'API Flask (OpenTelemetry)
-# ------------------------------------------------------------------
 gcloud services enable monitoring.googleapis.com \
     logging.googleapis.com \
     cloudtrace.googleapis.com
@@ -71,9 +53,8 @@ gcloud projects add-iam-policy-binding "$PROJECT_ID" \
     --member="serviceAccount:$SERVICE_ACCOUNT" \
     --role="roles/cloudtrace.agent" --condition=None >/dev/null
 
-# ------------------------------------------------------------------
 # 1. Canal de notification email (réutilisé s'il existe)
-# ------------------------------------------------------------------
+
 CHANNEL_ID=$(gcloud beta monitoring channels list \
   --filter="displayName=\"${NAME}\" AND type=\"email\"" \
   --format="value(name)" \
@@ -90,10 +71,9 @@ else
 fi
 CHANNEL="$CHANNEL_ID"   # variable utilisée par les fonctions d'alerte
 
-# ------------------------------------------------------------------
 # 2. Métriques basées sur les logs
 #    Prérequis : les jobs écrivent des logs JSON avec "job" et "event".
-# ------------------------------------------------------------------
+
 create_metric() {
   local name="$1" description="$2" filter="$3"
   if gcloud logging metrics describe "$name" >/dev/null 2>&1; then
@@ -175,9 +155,7 @@ create_metric scheduler_job_failed \
   "Déclenchements Cloud Scheduler en erreur" \
   'resource.type="cloud_scheduler_job" AND severity>=ERROR'
 
-# ------------------------------------------------------------------
 # 3. Fonctions de création d'alertes
-# ------------------------------------------------------------------
 FAILED=""    # policies en erreur
 PENDING=""   # policies en attente (métrique pas encore émise)
 
@@ -389,10 +367,8 @@ ensure_uptime_check () {
   echo "${full##*/}"
 }
 
-# ------------------------------------------------------------------
 # 4. Nettoyage de l'ancienne version (matcher "connected" sur /api/health,
 #    qui échouait en permanence car /api/health ne renvoie pas "connected")
-# ------------------------------------------------------------------
 OLD_POLICY=$(gcloud monitoring policies list \
   --filter='displayName="API /api/health en échec"' \
   --format="value(name)" 2>/dev/null | head -n1)
@@ -408,10 +384,8 @@ if [ -n "$OLD_CHECK" ]; then
   echo "Ancien uptime check supprimé."
 fi
 
-# ------------------------------------------------------------------
 # 5. Uptime checks
 #    Le service doit accepter les appels non authentifiés.
-# ------------------------------------------------------------------
 SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" \
   --region="$REGION" --format="value(status.url)")
 SERVICE_HOST="${SERVICE_URL#https://}"
@@ -430,9 +404,7 @@ DB_CHECK_ID=$(ensure_uptime_check "$UPTIME_DB_NAME" "$HEALTH_DB_PATH" \
   "contains-string" "connected" "$UPTIME_DB_PERIOD")
 echo "Uptime base de données : $DB_CHECK_ID"
 
-# ------------------------------------------------------------------
 # 6. ALERTES API
-# ------------------------------------------------------------------
 create_uptime_policy "API injoignable (/api/health)" "CRITICAL" "$LIVENESS_ID" \
   "/api/health ne répond pas 200 avec status=ok depuis plusieurs régions : le service Cloud Run est tombé ou injoignable. Voir la révision, les logs et les quotas."
 
@@ -469,7 +441,6 @@ create_policy "Erreurs création config trading" "ERROR" "0s" \
 
 # ------------------------------------------------------------------
 # 7. ALERTES JOBS : échecs (une policy par métrique d'échec)
-# ------------------------------------------------------------------
 # Trading (argent réel -> CRITICAL)
 create_log_alert "Trading horaire en échec" "CRITICAL" "hourly_trade_job_failed" 1 \
   "Le job hourly_trading a signalé un échec. Vérifier les logs du job, l'API Binance et les soldes."
@@ -506,11 +477,9 @@ create_job_execution_failed_alert
 create_log_alert "Cloud Scheduler : déclenchement en erreur" "ERROR" "scheduler_job_failed" 1 \
   "Un job Cloud Scheduler a échoué à déclencher sa cible. Le job associé n'a probablement pas tourné."
 
-# ------------------------------------------------------------------
 # 8. ALERTES JOBS : absence de succès (uniquement période < 23,5 h)
 #    Les jobs quotidien, hebdomadaire et mensuel ne peuvent pas être
 #    surveillés ainsi : leur période dépasse la fenêtre maximale.
-# ------------------------------------------------------------------
 # Job horaire : 70 min = 4200 s (1 h + marge)
 create_absence_alert "Trading horaire absent" "CRITICAL" "hourly_trade_job_success" 4200 \
   "Aucun succès de hourly_trading depuis 70 min. Vérifier Cloud Scheduler et les exécutions du job."
@@ -519,9 +488,7 @@ create_absence_alert "Trading horaire absent" "CRITICAL" "hourly_trade_job_succe
 # create_absence_alert "dbt absent" "ERROR" "dbt_job_success" 25200 \
 #   "Aucun succès dbt depuis 7 h."
 
-# ------------------------------------------------------------------
 # Bilan
-# ------------------------------------------------------------------
 if [ -n "$PENDING" ]; then
   printf "\nPolicies EN ATTENTE (métrique pas encore émise par l'API) :%b\n" "$PENDING"
   echo "-> Générez du trafic (voir le guide), attendez 2 min, puis relancez ce script."
