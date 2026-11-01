@@ -103,7 +103,7 @@ Le schéma ci-dessous synthétise l'ensemble du pipeline, de l'ingestion des don
 - **Cloud Monitoring** : Mise en place d'alerte.
 - **Grafana** : visualisation sur les métriques collectées.
 
-![Grafana](Monitoring-1793573614078.png)
+![Grafana](Monitoring.png)
 ---
 
 ## CI/CD & Déploiement
