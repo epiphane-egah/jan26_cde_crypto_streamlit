@@ -31,7 +31,7 @@ Ce projet met en œuvre un pipeline de bout en bout pour la génération et l'ex
 4. **Sélection automatique** du modèle le plus performant, déployé dans un service de trading en production.
 5. **Interface client** sous forme d'application **Streamlit**, déployée sur **Cloud Run** via une chaîne CI/CD complète.
 6. **Persistance** des données clients dans une base **PostgreSQL (Neon) et les données de transactions dans un bucket S3**.
-7. **Observabilité** via Cloud Logging, Prometheus et Grafana.
+7. **Observabilité** via  Cloud Logging, Cloud Monitoring, OpenTelemetry et Grafana 
 
 ---
 
@@ -59,7 +59,7 @@ Le schéma ci-dessous synthétise l'ensemble du pipeline, de l'ingestion des don
 | Interface utilisateur | Streamlit |
 | CI/CD | GitHub Actions, gcloud CLI |
 | Orchestration | Cloud Scheduler (déclenchement hebdomadaire) |
-| Monitoring & Logs | Cloud Logging, Prometheus, Grafana |
+| Monitoring & Logs | Cloud Logging, Cloud Monitoring, OpenTelemetry, Grafana |
 
 ---
 
@@ -94,14 +94,16 @@ Le schéma ci-dessous synthétise l'ensemble du pipeline, de l'ingestion des don
 - **GitHub Actions CI/CD** : pipeline d'intégration et de déploiement continu.
 - **gcloud CLI** : déploiement manuel/scripté complémentaire vers GCP.
 - **Cloud Run hosted deployment** : hébergement conteneurisé, scalable et serverless de l'application.
-- **Streamlit trading strategy bot/application** : interface web permettant aux **clients utilisateurs** de suivre et piloter leur stratégie de trading.
+- **React + Flask trading strategy bot/application** : interface web permettant aux **clients utilisateurs** de suivre et piloter leur stratégie de trading.
 
 ### 6. Observabilité & Monitoring
 
 - **Cloud Logging** : centralisation des logs applicatifs et d'infrastructure.
-- **Prometheus** : collecte de métriques applicatives et système.
-- **Grafana** : visualisation et alerting sur les métriques collectées.
+- **OpenTelemetry** : collecte de métriques applicatives et système.
+- **Cloud Monitoring** : Mise en place d'alerte.
+- **Grafana** : visualisation sur les métriques collectées.
 
+![Grafana](Monitoring-1793573614078.png)
 ---
 
 ## CI/CD & Déploiement
@@ -110,7 +112,7 @@ Le schéma ci-dessous synthétise l'ensemble du pipeline, de l'ingestion des don
 1. Push sur la branche principale → déclenchement de **GitHub Actions**.
 2. Build & tests automatisés.
 3. Déploiement de l'image conteneurisée sur **Cloud Run** (via `gcloud CLI` ou action GitHub dédiée).
-4. Mise à disposition de l'application **Streamlit** aux utilisateurs finaux.
+4. Mise à disposition de l'application **React + Flask** aux utilisateurs finaux.
 
 ---
 
