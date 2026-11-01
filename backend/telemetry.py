@@ -14,7 +14,6 @@ from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
 from opentelemetry.resourcedetector.gcp_resource_detector import GoogleCloudResourceDetector
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.instrumentation.system_metrics import SystemMetricsInstrumentor
-from collections.abc import Sequence
 from typing import Union, Dict
 from opentelemetry.metrics import (
     Histogram,
@@ -54,6 +53,7 @@ def setup_telemetry(
         names as keys and metric definitions as values.
     """
     global _instruments
+    
     if _instruments is not None:
         return _instruments
 
@@ -154,7 +154,7 @@ def setup_telemetry(
     # l'api ce création des métriques tagger par le module qui le produit app.py
     meter = meter_provider.get_meter("backend.app")
 
-    return {
+    _instruments = {
         # - http.request.method - http.route - http.response.status_code
         "http_request_total": meter.create_counter(
             "app.http.request.total",
@@ -206,3 +206,4 @@ def setup_telemetry(
             description="Duration of the PostgreSQL health check query (SELECT 1)",
         )
     }
+    return _instruments
